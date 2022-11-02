@@ -1,0 +1,6 @@
+comment = 'Extension Kit'
+default_version = '@CARGO_VERSION@'
+module_pathname = '$libdir/pgextkit'
+relocatable = false
+superuser = false
+schema = pgextkit
