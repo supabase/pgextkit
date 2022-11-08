@@ -111,10 +111,4 @@ pub extern "C" fn database_worker(_arg: pg_sys::Datum) {
             }
         }
     }
-
-    loop {
-        if !BackgroundWorker::wait_latch(Some(Duration::from_millis(100))) {
-            break;
-        }
-    }
 }
