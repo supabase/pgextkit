@@ -90,7 +90,7 @@ impl SharedDictionary {
         }
     }
 
-    pub fn get_mut<T: Unpin + SyncMut>(&self, name: &str) -> Option<Pin<&'static mut T>> {
+    fn internal_get<T>(&self, name: &str) -> (bool, *mut T) {
         let lock = unsafe {
             &mut (*pg_sys::GetNamedLWLockTranche(cstr!("pgextkit_shared_dictionary").as_ptr())).lock
         };
@@ -114,10 +114,22 @@ impl SharedDictionary {
         unsafe {
             pg_sys::LWLockRelease(lock);
         }
-        if !found {
-            None
+        (found, unsafe { (*entry).value })
+    }
+
+    pub fn get_mut<T: Unpin + SyncMut>(&self, name: &str) -> Option<Pin<&'static mut T>> {
+        if let (true, value) = self.internal_get(name) {
+            Some(Pin::new(unsafe { &mut *(value as *mut T) }))
         } else {
-            Some(Pin::new(unsafe { &mut *((*entry).value as *mut T) }))
+            None
+        }
+    }
+
+    pub fn get<T: Unpin>(&self, name: &str) -> Option<Pin<&'static T>> {
+        if let (true, value) = self.internal_get(name) {
+            Some(Pin::new(unsafe { &*(value as *const T) }))
+        } else {
+            None
         }
     }
 
