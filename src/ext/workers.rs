@@ -94,14 +94,18 @@ pub extern "C" fn database_worker(_arg: pg_sys::Datum) {
     BackgroundWorker::attach_signal_handlers(SignalWakeFlags::SIGHUP | SignalWakeFlags::SIGTERM);
 
     let extensions = BackgroundWorker::transaction(|| {
-        ext::get_extensions().into_iter().collect::<HashMap<_, _>>()
+        ext::get_extensions()
+            .into_iter()
+            .map(|(name, version, username)| (name, (version, username)))
+            .collect::<HashMap<_, _>>()
     });
 
     for (name, version, bgw) in unsafe { BACKGROUND_WORKERS.iter_mut() } {
-        if let Some(installed_version) = extensions.get(name) {
+        if let Some((installed_version, username)) = extensions.get(name) {
             if installed_version == version {
                 unsafe {
-                    bgw.bgw_extra = RpgffiChar128::from(database).0;
+                    bgw.bgw_extra =
+                        RpgffiChar128::from(format!("{}@{}", username, database).as_str()).0;
                     pg_sys::RegisterDynamicBackgroundWorker(&mut **bgw, std::ptr::null_mut());
                 }
             }

@@ -53,10 +53,13 @@ fn pgextkit_deinit() {
 
 #[pg_guard]
 extern "C" fn worker(_arg: pg_sys::Datum) {
-    let database = BackgroundWorker::get_extra();
-    BackgroundWorker::connect_worker_to_spi(Some(database), None);
+    let dbinfo = BackgroundWorker::get_extra().split('@').collect::<Vec<_>>();
+    assert!(dbinfo.len() == 2);
+    let username = dbinfo[0];
+    let database = dbinfo[1];
+    BackgroundWorker::connect_worker_to_spi(Some(database), Some(username));
 
-    pgx::log!("Starting worker on {}", database);
+    pgx::log!("Starting worker on {} (user: {})", database, username);
     let dict = SharedDictionary::default();
     let lock: Pin<&mut DatabaseLocal<PgDynamicLwLock<heapless::String<96>>>> =
         dict.get_mut("LOCK").unwrap();

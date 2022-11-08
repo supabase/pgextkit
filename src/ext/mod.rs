@@ -432,9 +432,9 @@ fn load(extname: &str, version: default!(Option<&str>, NULL)) {
 fn unload(extname: &str, version: default!(Option<&str>, NULL)) {
     let version = match version {
         None => {
-            if let Some((_, version)) = get_extensions()
+            if let Some((_, version, _)) = get_extensions()
                 .into_iter()
-                .find(|(name, _)| name == extname)
+                .find(|(name, _, _)| name == extname)
             {
                 version
             } else {
@@ -444,7 +444,7 @@ fn unload(extname: &str, version: default!(Option<&str>, NULL)) {
         Some(version) => {
             if get_extensions()
                 .iter()
-                .any(|(name_, version_)| name_ == extname && version_ == version)
+                .any(|(name_, version_, _username)| name_ == extname && version_ == version)
             {
                 version.to_string()
             } else {
@@ -550,7 +550,16 @@ mod dynamic_handle {
                 0,
             )
             .unwrap();
-            (*bgw).bgw_extra = RpgffiChar128::from(database.to_string_lossy().as_ref()).0;
+            let username = CStr::from_ptr(pg_sys::GetUserNameFromId(pg_sys::GetUserId(), false));
+            (*bgw).bgw_extra = RpgffiChar128::from(
+                format!(
+                    "{}@{}",
+                    username.to_string_lossy().as_ref(),
+                    database.to_string_lossy().as_ref()
+                )
+                .as_str(),
+            )
+            .0;
             pg_sys::RegisterDynamicBackgroundWorker(bgw, std::ptr::null_mut());
         }
     }
@@ -589,7 +598,7 @@ impl Handle {
     }
 }
 
-fn get_extensions() -> Vec<(String, String)> {
+fn get_extensions() -> Vec<(String, String, String)> {
     unsafe {
         let mut result = vec![];
         {
@@ -612,7 +621,12 @@ fn get_extensions() -> Vec<(String, String)> {
                 let str = CStr::from_ptr((*ext).extname.data.as_ptr());
                 let name: String = str.to_string_lossy().into();
 
-                result.push((name, version));
+                let user_name: String =
+                    CStr::from_ptr(pg_sys::GetUserNameFromId((*ext).extowner, true))
+                        .to_string_lossy()
+                        .into();
+
+                result.push((name, version, user_name));
             }
             if let Some(end) = (*(*(*scan).rs_rd).rd_tableam).scan_end {
                 end(scan);
