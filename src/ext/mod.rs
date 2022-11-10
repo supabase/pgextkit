@@ -518,7 +518,7 @@ mod static_handle {
 
 mod dynamic_handle {
     use crate::ext::ALLOCATOR;
-    use crate::types::RpgffiChar128;
+    use crate::types::{RpgffiChar128, RpgffiChar96};
     use crate::Handle;
     use pgx::{direct_function_call, pg_sys, FromDatum};
     use std::alloc::{GlobalAlloc, Layout};
@@ -551,6 +551,13 @@ mod dynamic_handle {
             )
             .unwrap();
             let username = CStr::from_ptr(pg_sys::GetUserNameFromId(pg_sys::GetUserId(), false));
+            (*bgw).bgw_name = RpgffiChar96::from(
+                CStr::from_ptr((*bgw).bgw_name.as_ptr())
+                    .to_string_lossy()
+                    .replace("{{DATABASE}}", database.to_string_lossy().as_ref())
+                    .as_str(),
+            )
+            .0;
             (*bgw).bgw_extra = RpgffiChar128::from(
                 format!(
                     "{}@{}",

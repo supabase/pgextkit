@@ -1,6 +1,6 @@
 use crate::ext;
 use crate::ext::BACKGROUND_WORKERS;
-use crate::types::RpgffiChar128;
+use crate::types::{RpgffiChar128, RpgffiChar96};
 use pgx::bgworkers::{BackgroundWorker, BackgroundWorkerBuilder, SignalWakeFlags};
 use pgx::cstr_core::CStr;
 use pgx::pg_sys::{AccessShareLock, DatabaseRelationId, ScanDirection_ForwardScanDirection};
@@ -106,6 +106,13 @@ pub extern "C" fn database_worker(_arg: pg_sys::Datum) {
                 unsafe {
                     bgw.bgw_extra =
                         RpgffiChar128::from(format!("{}@{}", username, database).as_str()).0;
+                    (*bgw).bgw_name = RpgffiChar96::from(
+                        CStr::from_ptr((*bgw).bgw_name.as_ptr())
+                            .to_string_lossy()
+                            .replace("{{DATABASE}}", database)
+                            .as_str(),
+                    )
+                    .0;
                     pg_sys::RegisterDynamicBackgroundWorker(&mut **bgw, std::ptr::null_mut());
                 }
             }

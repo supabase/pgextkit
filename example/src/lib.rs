@@ -21,7 +21,7 @@ extension_sql!(
 #[no_mangle]
 fn pgextkit_init(handle: *mut pgextkit::Handle) {
     let handle = unsafe { &mut *handle } as &mut pgextkit::Handle;
-    let worker = BackgroundWorkerBuilder::new("example")
+    let worker = BackgroundWorkerBuilder::new("example ({{DATABASE}})")
         .set_library(&handle.library_name())
         .enable_shmem_access(None)
         .enable_spi_access()
