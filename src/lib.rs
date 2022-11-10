@@ -111,7 +111,7 @@ impl Handle {
         let mut worker = worker.into();
         (self.register_bgworker)(self, &mut worker);
     }
-    pub fn library_name<'a>(&'a self) -> Cow<'a, str> {
+    pub fn library_name(&self) -> Cow<str> {
         unsafe { CStr::from_ptr(self.library_name).to_string_lossy() }
     }
 }
