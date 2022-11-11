@@ -131,7 +131,7 @@ pub extern "C" fn _PG_init() {
     #[cfg(not(feature = "pg15"))]
     unsafe {
         pg_sys::RequestAddinShmemSpace(shmem_size as usize);
-        pg_sys::RequestAddinShmemSpace(SharedDictionary::estimate_size());
+        pg_sys::RequestAddinShmemSpace(SharedDictionary::size());
         pg_sys::RequestNamedLWLockTranche(cstr!("pgextkit_shared_dictionary").as_ptr(), 1);
     }
 
@@ -147,7 +147,7 @@ pub extern "C" fn _PG_init() {
                     i();
                 }
                 pg_sys::RequestAddinShmemSpace(SHMEM_SIZE);
-                pg_sys::RequestAddinShmemSpace(SharedDictionary::estimate_size());
+                pg_sys::RequestAddinShmemSpace(SharedDictionary::size());
                 pg_sys::RequestNamedLWLockTranche(cstr!("pgextkit_shared_dictionary").as_ptr(), 1);
 
                 for (_cb, size, _payload) in ALLOC_CALLBACKS.iter() {
@@ -642,4 +642,16 @@ fn get_extensions() -> Vec<(String, String, String)> {
         }
         result
     }
+}
+
+#[pg_extern]
+fn shared_dictionary_entries(
+) -> TableIterator<'static, (name!(name, String), name!(type_name, String))> {
+    TableIterator::new(
+        SharedDictionary::default()
+            .entries()
+            .map(|(name, type_name)| (name.to_string(), type_name.to_string()))
+            .collect::<Vec<_>>()
+            .into_iter(),
+    )
 }
