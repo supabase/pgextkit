@@ -23,7 +23,21 @@ trait TruncatingFrom {
 
 impl<const N: usize> TruncatingFrom for heapless::String<N> {
     fn truncating_from<S: AsRef<str>>(s: S) -> Self {
-        Self::from(&s.as_ref()[0..N])
+        // This implementation is copied from str::floor_char_boundary
+        // that is currently a nightly-only API (https://github.com/rust-lang/rust/issues/93743)
+        let str = s.as_ref();
+        if N >= str.len() {
+            Self::from(str)
+        } else {
+            let lower_bound = N.saturating_sub(3);
+            let new_index = str.as_bytes()[lower_bound..N]
+                .iter()
+                .rposition(|b| (*b as i8) >= -0x40 /* is_utf8_char_boundary() */);
+
+            // SAFETY: we know that the character boundary will be within four bytes
+            let closest = unsafe { lower_bound + new_index.unwrap_unchecked() };
+            Self::from(&str[..closest])
+        }
     }
 }
 
