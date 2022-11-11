@@ -94,12 +94,11 @@ impl Handle {
 
     pub fn allocate_shmem_with<T: Unpin, F: FnOnce() -> T>(&self, name: &str, f: F) {
         use std::mem::ManuallyDrop;
-        use std::pin::Pin;
         // We need to move this name so it stays allocated
         let name = String::from(name);
         self.allocate_shmem(move |mem| unsafe {
             *mem = ManuallyDrop::new(f());
-            SharedDictionary::default().insert::<T>(name.as_str(), Pin::new(&mut *mem));
+            SharedDictionary::default().insert::<T>(name.as_str(), mem as *mut T);
         });
     }
 

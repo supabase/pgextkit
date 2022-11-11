@@ -59,7 +59,7 @@ impl Default for SharedDictionary {
 }
 
 impl SharedDictionary {
-    pub fn insert<T: Unpin>(&mut self, name: &str, value: Pin<&mut T>) {
+    pub fn insert<T: Unpin>(&mut self, name: &str, value: *mut T) {
         let lock = unsafe {
             &mut (*pg_sys::GetNamedLWLockTranche(cstr!("pgextkit_shared_dictionary").as_ptr())).lock
         };
@@ -72,7 +72,7 @@ impl SharedDictionary {
                 name,
                 Entry {
                     type_name: heapless::String::truncating_from(std::any::type_name::<T>()),
-                    ptr: value.get_mut() as *mut _ as *mut _,
+                    ptr: value as *mut _,
                 },
             );
         }
