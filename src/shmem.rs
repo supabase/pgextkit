@@ -17,6 +17,22 @@ extern "C" fn make_hashkey(key: *const std::ffi::c_void, _keysize: pg_sys::Size)
     hasher.finish32()
 }
 
+extern "C" fn compare(
+    key1: *const std::ffi::c_void,
+    key2: *const std::ffi::c_void,
+    _keysize: pg_sys::Size,
+) -> i32 {
+    let key1 = key1 as *const heapless::String<96>;
+    let key2 = key2 as *const heapless::String<96>;
+    unsafe {
+        if (&*key1) == (&*key2) {
+            0
+        } else {
+            1
+        }
+    }
+}
+
 const MAX_ATTACHMENTS: i64 = 8192;
 
 pub struct SharedDictionary {
@@ -31,6 +47,7 @@ impl Default for SharedDictionary {
             (*infop).keysize = std::mem::size_of::<heapless::String<96>>();
             (*infop).entrysize = std::mem::size_of::<Entry<heapless::String<96>, ()>>();
             (*infop).hash = Some(make_hashkey);
+            (*infop).match_ = Some(compare);
         }
         let mut info = unsafe { info.assume_init() };
 
@@ -46,7 +63,7 @@ impl Default for SharedDictionary {
                 MAX_ATTACHMENTS,
                 MAX_ATTACHMENTS,
                 &mut info,
-                (pg_sys::HASH_ELEM | pg_sys::HASH_BLOBS) as i32,
+                (pg_sys::HASH_ELEM | pg_sys::HASH_BLOBS | pg_sys::HASH_COMPARE) as i32,
             )
         };
 
@@ -144,7 +161,7 @@ impl SharedDictionary {
     }
 }
 
-#[repr(C)]
+#[repr(C, packed)]
 struct Entry<K, V> {
     key: K,
     value: *mut V,
