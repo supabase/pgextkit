@@ -51,6 +51,7 @@ fn pgextkit_deinit() {
     latch.set_and_wake_up();
 }
 
+#[no_mangle]
 #[pg_guard]
 extern "C" fn worker(_arg: pg_sys::Datum) {
     let dbinfo = BackgroundWorker::get_extra().split('@').collect::<Vec<_>>();

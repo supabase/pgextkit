@@ -1,6 +1,6 @@
 use crate::types::SyncMut;
+use cstr_core::cstr;
 use heapless::FnvIndexMap;
-use pgx::cstr_core::cstr;
 use pgx::prelude::*;
 use std::pin::Pin;
 

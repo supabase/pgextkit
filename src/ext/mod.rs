@@ -1,9 +1,9 @@
 use super::Magic;
 use crate::shmem::SharedDictionary;
 use crate::{Handle, VERSION};
+use cstr_core::{cstr, CStr, CString};
 use good_memory_allocator::SpinLockedAllocator;
 use pgx::bgworkers::BackgroundWorkerBuilder;
-use pgx::cstr_core::{cstr, CStr, CString};
 use pgx::pg_sys::{AccessShareLock, ExtensionRelationId, ScanDirection_ForwardScanDirection};
 use pgx::prelude::*;
 use pgx::{pg_sys, FromDatum, GucContext, GucRegistry, GucSetting, IntoDatum};
