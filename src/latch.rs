@@ -103,13 +103,7 @@ impl OwnedLatch {
     }
 
     pub fn set_and_wake_up(&self) {
-        #[cfg(feature = "raw-set-latch")]
-        extern "C" {
-            fn SetLatch(latch: *mut pg_sys::Latch);
-        }
-        #[cfg(not(feature = "raw-set-latch"))]
-        use pg_sys::SetLatch;
-        unsafe { SetLatch(self.latch) }
+        unsafe { pg_sys::SetLatch(self.latch) }
     }
 
     pub fn disown(&self) {
