@@ -8,6 +8,7 @@ crate-type = ["cdylib"]
 
 [features]
 default = ["pg13", "extension"]
+raw-set-latch = ["pgextkit/raw-set-latch"]
 extension = []
 pg11 = ["pgx/pg11", "pgx-tests/pg11", "pgextkit/pg11" ]
 pg12 = ["pgx/pg12", "pgx-tests/pg12", "pgextkit/pg12" ]

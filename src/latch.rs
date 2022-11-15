@@ -30,7 +30,13 @@ impl SharedLatch {
     }
 
     pub fn set_and_wake_up(&mut self) {
-        unsafe { pg_sys::SetLatch(&mut self.latch as *mut _) }
+        #[cfg(feature = "raw-set-latch")]
+        extern "C" {
+            fn SetLatch(latch: *mut pg_sys::Latch);
+        }
+        #[cfg(not(feature = "raw-set-latch"))]
+        use pg_sys::SetLatch;
+        unsafe { SetLatch(&mut self.latch as *mut _) }
     }
 }
 
@@ -97,7 +103,13 @@ impl OwnedLatch {
     }
 
     pub fn set_and_wake_up(&self) {
-        unsafe { pg_sys::SetLatch(self.latch) }
+        #[cfg(feature = "raw-set-latch")]
+        extern "C" {
+            fn SetLatch(latch: *mut pg_sys::Latch);
+        }
+        #[cfg(not(feature = "raw-set-latch"))]
+        use pg_sys::SetLatch;
+        unsafe { SetLatch(self.latch) }
     }
 
     pub fn disown(&self) {

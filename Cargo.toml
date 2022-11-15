@@ -8,6 +8,9 @@ crate-type = ["cdylib","rlib"]
 
 [features]
 default = []
+# Enable this if you want to use `SetLatch` without pgx FFI boundary checks.
+# This may be useful in multi-threaded environments (but do so with extreme caution!)
+raw-set-latch = []
 extension = ["libc", "libloading"]
 pg11 = ["pgx/pg11", "pgx-tests/pg11" ]
 pg12 = ["pgx/pg12", "pgx-tests/pg12" ]
