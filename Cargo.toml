@@ -29,12 +29,16 @@ libc = { version = "0.2.135", optional = true }
 libloading = { version = "0.7.3", optional = true }
 once_cell = "1.15.0"
 parse-size = { version = "1.0.0", features = ["std"] }
-pgx = { version = "0.6.0-alpha.1", git = "https://github.com/tcdi/pgx", rev = "7430ce1" }
+pgx = { version = ">=0.6.0-alpha.1" }
 pin-project = "1.0.12"
 uuid = { version = "1.2.1", features = ["v4"]}
 
 [dev-dependencies]
-pgx-tests = { version = "0.6.0-alpha.1", git = "https://github.com/tcdi/pgx", rev = "7430ce1" }
+pgx-tests = { version = ">=0.6.0-alpha.1" }
+
+[patch.crates-io]
+pgx = { git = "https://github.com/tcdi/pgx", rev = "7430ce1" }
+pgx-tests = { git = "https://github.com/tcdi/pgx", rev = "7430ce1" }
 
 [profile.dev]
 panic = "unwind"
