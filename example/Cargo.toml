@@ -19,13 +19,13 @@ pg15 = ["pgx/pg15", "pgx-tests/pg15", "pgextkit/pg15" ]
 pg_test = []
 
 [dependencies]
-pgx = { version = "0.6.0-alpha.1", git = "https://github.com/tcdi/pgx", rev = "7430ce1" }
+pgx = "0.6.1"
 pgextkit = { path = ".." }
 once_cell = "1.15.0"
 heapless = "0.7.16"
 
 [dev-dependencies]
-pgx-tests = { version = "0.6.0-alpha.1", git = "https://github.com/tcdi/pgx", rev = "7430ce1" }
+pgx-tests = "0.6.1"
 
 [profile.dev]
 panic = "unwind"
